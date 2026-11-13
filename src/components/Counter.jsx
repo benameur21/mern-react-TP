@@ -1,11 +1,27 @@
-import { useState } from 'react'
+
+import { useState, useEffect } from 'react'
 
 export default function Counter() {
-  const [count, setCount] = useState(0)
+  // 1. Initialize count from localStorage
+  const [count, setCount] = useState(() => {
+    const sauvegarde = localStorage.getItem('mon_compteur_valeur')
+    return sauvegarde !== null ? parseInt(sauvegarde, 10) : 0
+  })
+
   const [step, setStep] = useState(1)
   const [message, setMessage] = useState('Aucun clic pour le moment')
   const [totalClics, setTotalClics] = useState(0)
   const [historique, setHistorique] = useState([])
+
+  // 2. EFFECT A: Synchronize browser tab title
+  useEffect(() => {
+    document.title = 'Compteur : ' + count
+  }, [count])
+
+  // 3. EFFECT B: Save count automatically in localStorage
+  useEffect(() => {
+    localStorage.setItem('mon_compteur_valeur', count.toString())
+  }, [count])
 
   const handleIncrement = () => {
     const nouveauCompte = count + step
@@ -41,17 +57,21 @@ export default function Counter() {
   return (
     <div className="counter-card">
       <div className={getStyleClass()}>{count}</div>
+
       <div className="btn-group">
         <button className="btn btn-dec" onClick={handleDecrement}>
           -{step}
         </button>
+
         <button className="btn btn-reset" onClick={handleReset}>
           Reset
         </button>
+
         <button className="btn btn-inc" onClick={handleIncrement}>
           +{step}
         </button>
       </div>
+
       <div className="step-control">
         <label>Pas d'incrementation :</label>
         <select
@@ -64,6 +84,7 @@ export default function Counter() {
           <option value="10">10</option>
         </select>
       </div>
+
       <div className="history-card">
         <p>
           <strong>Derniere action :</strong> {message}
@@ -71,6 +92,7 @@ export default function Counter() {
         <p>
           <strong>Total des clics :</strong> {totalClics}
         </p>
+
         {historique.length > 0 && (
           <p>
             <strong>Historique :</strong> {historique.join(', ')}
