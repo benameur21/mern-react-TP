@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 export default function Counter() {
   // 1. Restore counter value from localStorage
@@ -10,27 +10,27 @@ export default function Counter() {
     return Math.max(-50, Math.min(50, valeur))
   })
 
-  // 2. Restore history from localStorage
   const [step, setStep] = useState(1)
   const [message, setMessage] = useState('Aucun clic pour le moment')
   const [totalClics, setTotalClics] = useState(0)
 
+  // 2. Restore history from localStorage
   const [historique, setHistorique] = useState(() => {
     const sauvegarde = localStorage.getItem('mon_compteur_historique')
     return sauvegarde !== null ? JSON.parse(sauvegarde) : []
   })
 
-  // 3. EFFECT A: Synchronize browser tab title
+  // 3. Synchronize browser tab title
   useEffect(() => {
     document.title = 'Compteur : ' + count
   }, [count])
 
-  // 4. EFFECT B: Save counter value in localStorage
+  // 4. Save counter value
   useEffect(() => {
     localStorage.setItem('mon_compteur_valeur', count.toString())
   }, [count])
 
-  // 5. EFFECT C: Save history in localStorage
+  // 5. Save history
   useEffect(() => {
     localStorage.setItem(
       'mon_compteur_historique',
@@ -38,7 +38,7 @@ export default function Counter() {
     )
   }, [historique])
 
-  // 6. Increment with maximum limit (+50)
+  // 6. Increment with maximum limit
   const handleIncrement = () => {
     const nouveauCompte = count + step
 
@@ -55,7 +55,7 @@ export default function Counter() {
     setHistorique([...historique, action])
   }
 
-  // 7. Decrement with minimum limit (-50)
+  // 7. Decrement with minimum limit
   const handleDecrement = () => {
     const nouveauCompte = count - step
 
@@ -72,7 +72,27 @@ export default function Counter() {
     setHistorique([...historique, action])
   }
 
-  // 8. Reset counter and history
+  // 8. Keyboard controls with useEffect
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowUp') {
+        handleIncrement()
+      }
+
+      if (e.key === 'ArrowDown') {
+        handleDecrement()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+
+    // Cleanup: remove the keyboard event listener
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [handleIncrement, handleDecrement])
+
+  // 9. Reset counter and history
   const handleReset = () => {
     setCount(0)
     setMessage('Remise a zero')
@@ -80,7 +100,7 @@ export default function Counter() {
     setHistorique([])
   }
 
-  // 9. Change counter color depending on its value
+  // 10. Counter color
   const getStyleClass = () => {
     if (count > 0) return 'counter-display positive'
     if (count < 0) return 'counter-display negative'
@@ -133,6 +153,10 @@ export default function Counter() {
           </p>
         )}
       </div>
+
+      <p>
+        <strong>Clavier :</strong> ↑ pour incrémenter | ↓ pour décrémenter
+      </p>
     </div>
   )
 }
