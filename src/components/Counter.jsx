@@ -5,7 +5,10 @@ export default function Counter() {
   // 1. Initialize count from localStorage
   const [count, setCount] = useState(() => {
     const sauvegarde = localStorage.getItem('mon_compteur_valeur')
-    return sauvegarde !== null ? parseInt(sauvegarde, 10) : 0
+    const valeur = sauvegarde !== null ? parseInt(sauvegarde, 10) : 0
+
+    // Ensure the saved value respects the limits
+    return Math.max(-50, Math.min(50, valeur))
   })
 
   const [step, setStep] = useState(1)
@@ -23,24 +26,41 @@ export default function Counter() {
     localStorage.setItem('mon_compteur_valeur', count.toString())
   }, [count])
 
+  // 4. Increment with maximum limit (+50)
   const handleIncrement = () => {
     const nouveauCompte = count + step
+
+    if (nouveauCompte > 50) {
+      setMessage('Seuil maximal de 50 atteint !')
+      return
+    }
+
     setCount(nouveauCompte)
     setMessage('Ajout de ' + step)
     setTotalClics(totalClics + 1)
+
     const action = '+' + step
     setHistorique([...historique, action])
   }
 
+  // 5. Decrement with minimum limit (-50)
   const handleDecrement = () => {
     const nouveauCompte = count - step
+
+    if (nouveauCompte < -50) {
+      setMessage('Seuil minimal de -50 atteint !')
+      return
+    }
+
     setCount(nouveauCompte)
     setMessage('Retrait de ' + step)
     setTotalClics(totalClics + 1)
+
     const action = '-' + step
     setHistorique([...historique, action])
   }
 
+  // 6. Reset counter
   const handleReset = () => {
     setCount(0)
     setMessage('Remise a zero')
@@ -48,6 +68,7 @@ export default function Counter() {
     setHistorique([])
   }
 
+  // 7. Change counter color depending on its value
   const getStyleClass = () => {
     if (count > 0) return 'counter-display positive'
     if (count < 0) return 'counter-display negative'
@@ -89,6 +110,7 @@ export default function Counter() {
         <p>
           <strong>Derniere action :</strong> {message}
         </p>
+
         <p>
           <strong>Total des clics :</strong> {totalClics}
         </p>
