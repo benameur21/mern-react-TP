@@ -2,32 +2,80 @@ import { useState } from 'react'
 
 export default function Counter() {
   const [count, setCount] = useState(0)
+  const [step, setStep] = useState(1)
+  const [message, setMessage] = useState('Aucun clic pour le moment')
+  const [totalClics, setTotalClics] = useState(0)
+  const [historique, setHistorique] = useState([])
 
   const handleIncrement = () => {
-    setCount((prev) => prev + 1)
+    const nouveauCompte = count + step
+    setCount(nouveauCompte)
+    setMessage('Ajout de ' + step)
+    setTotalClics(totalClics + 1)
+    const action = '+' + step
+    setHistorique([...historique, action])
   }
 
   const handleDecrement = () => {
-    setCount((prev) => prev - 1)
+    const nouveauCompte = count - step
+    setCount(nouveauCompte)
+    setMessage('Retrait de ' + step)
+    setTotalClics(totalClics + 1)
+    const action = '-' + step
+    setHistorique([...historique, action])
   }
 
   const handleReset = () => {
     setCount(0)
+    setMessage('Remise a zero')
+    setTotalClics(totalClics + 1)
+    setHistorique([])
+  }
+
+  const getStyleClass = () => {
+    if (count > 0) return 'counter-display positive'
+    if (count < 0) return 'counter-display negative'
+    return 'counter-display zero'
   }
 
   return (
     <div className="counter-card">
-      <div className="counter-display">{count}</div>
+      <div className={getStyleClass()}>{count}</div>
       <div className="btn-group">
         <button className="btn btn-dec" onClick={handleDecrement}>
-          -1
+          -{step}
         </button>
         <button className="btn btn-reset" onClick={handleReset}>
           Reset
         </button>
         <button className="btn btn-inc" onClick={handleIncrement}>
-          +1
+          +{step}
         </button>
+      </div>
+      <div className="step-control">
+        <label>Pas d'incrementation :</label>
+        <select
+          value={step}
+          onChange={(e) => setStep(parseInt(e.target.value, 10))}
+        >
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="5">5</option>
+          <option value="10">10</option>
+        </select>
+      </div>
+      <div className="history-card">
+        <p>
+          <strong>Derniere action :</strong> {message}
+        </p>
+        <p>
+          <strong>Total des clics :</strong> {totalClics}
+        </p>
+        {historique.length > 0 && (
+          <p>
+            <strong>Historique :</strong> {historique.join(', ')}
+          </p>
+        )}
       </div>
     </div>
   )
