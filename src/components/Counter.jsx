@@ -2,31 +2,43 @@
 import { useState, useEffect } from 'react'
 
 export default function Counter() {
-  // 1. Initialize count from localStorage
+  // 1. Restore counter value from localStorage
   const [count, setCount] = useState(() => {
     const sauvegarde = localStorage.getItem('mon_compteur_valeur')
     const valeur = sauvegarde !== null ? parseInt(sauvegarde, 10) : 0
 
-    // Ensure the saved value respects the limits
     return Math.max(-50, Math.min(50, valeur))
   })
 
+  // 2. Restore history from localStorage
   const [step, setStep] = useState(1)
   const [message, setMessage] = useState('Aucun clic pour le moment')
   const [totalClics, setTotalClics] = useState(0)
-  const [historique, setHistorique] = useState([])
 
-  // 2. EFFECT A: Synchronize browser tab title
+  const [historique, setHistorique] = useState(() => {
+    const sauvegarde = localStorage.getItem('mon_compteur_historique')
+    return sauvegarde !== null ? JSON.parse(sauvegarde) : []
+  })
+
+  // 3. EFFECT A: Synchronize browser tab title
   useEffect(() => {
     document.title = 'Compteur : ' + count
   }, [count])
 
-  // 3. EFFECT B: Save count automatically in localStorage
+  // 4. EFFECT B: Save counter value in localStorage
   useEffect(() => {
     localStorage.setItem('mon_compteur_valeur', count.toString())
   }, [count])
 
-  // 4. Increment with maximum limit (+50)
+  // 5. EFFECT C: Save history in localStorage
+  useEffect(() => {
+    localStorage.setItem(
+      'mon_compteur_historique',
+      JSON.stringify(historique)
+    )
+  }, [historique])
+
+  // 6. Increment with maximum limit (+50)
   const handleIncrement = () => {
     const nouveauCompte = count + step
 
@@ -43,7 +55,7 @@ export default function Counter() {
     setHistorique([...historique, action])
   }
 
-  // 5. Decrement with minimum limit (-50)
+  // 7. Decrement with minimum limit (-50)
   const handleDecrement = () => {
     const nouveauCompte = count - step
 
@@ -60,7 +72,7 @@ export default function Counter() {
     setHistorique([...historique, action])
   }
 
-  // 6. Reset counter
+  // 8. Reset counter and history
   const handleReset = () => {
     setCount(0)
     setMessage('Remise a zero')
@@ -68,7 +80,7 @@ export default function Counter() {
     setHistorique([])
   }
 
-  // 7. Change counter color depending on its value
+  // 9. Change counter color depending on its value
   const getStyleClass = () => {
     if (count > 0) return 'counter-display positive'
     if (count < 0) return 'counter-display negative'
